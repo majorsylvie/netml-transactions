@@ -1128,6 +1128,7 @@ class PCAP:
               "port_dst"  : destination port
               "is_dns"    : True if packet is DNS packet, else False
               "dns_transaction_id" : floating point DNS transaction ID
+              "dns_record_qtype" : string representation of the DNS record
               "dns_query" : string DNS query
               "dns_resp"  : string DNS response
 
@@ -1174,6 +1175,8 @@ class PCAP:
                     # attribute of packet's DNS layer
                     pkt_dict['dns_transaction_id'] = int(pkt[DNS].id)
                     numeric_record_qtype = pkt[DNS].qd.qtype
+                    # turn the qtype number into a string
+                    # via helper function
                     pkt_dict['dns_record_qtype'] = _dns_record_qtype_to_string(numeric_record_qtype)
 
 
