@@ -78,6 +78,11 @@ def _dns_record_qtype_to_string(numeric_record_qtype):
         https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml
 
     """
+    # make sure that we are actually being given an integer
+    if not isinstance(numeric_record_qtype, int):
+        print(f"DNS packet with non-numeric qtype: {numeric_record_qtype} given")
+        return pd.NA
+
     DNS_QTYPE_TO_RECORD_STRING = { 1 : "A",
                                  2 : "NS",
                                  3 : "MD",
@@ -1174,10 +1179,14 @@ class PCAP:
                     # the transaction ID is stored in the `.id`
                     # attribute of packet's DNS layer
                     pkt_dict['dns_transaction_id'] = pkt[DNS].id
-                    numeric_record_qtype = pkt[DNS].qd.qtype
-                    # turn the qtype number into a string
-                    # via helper function
-                    pkt_dict['dns_record_qtype'] = _dns_record_qtype_to_string(numeric_record_qtype)
+
+                    # depending on the DNS server, 
+                    # DNS responses both 
+                    if pkt[DNS].qd is not None:
+                        numeric_record_qtype = pkt[DNS].qd.qtype
+                        # turn the qtype number into a string
+                        # via helper function
+                        pkt_dict['dns_record_qtype'] = _dns_record_qtype_to_string(numeric_record_qtype)
 
 
                 if (dnsqr := pkt.getlayer(DNSQR)) is not None:
