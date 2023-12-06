@@ -1173,7 +1173,7 @@ class PCAP:
                 if DNS in pkt:
                     # the transaction ID is stored in the `.id`
                     # attribute of packet's DNS layer
-                    pkt_dict['dns_transaction_id'] = int(pkt[DNS].id)
+                    pkt_dict['dns_transaction_id'] = pkt[DNS].id
                     numeric_record_qtype = pkt[DNS].qd.qtype
                     # turn the qtype number into a string
                     # via helper function
@@ -1239,9 +1239,10 @@ class PCAP:
         self.df['time_normed'] = self.df['time'].apply(lambda x: x - self.df.iloc[0]['time'])
 
         # cast all transaction ID's to integers
-        # Int64Dtype is pandas optional integer type
-        # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Int64Dtype.html
-        self.df['dns_transaction_id'] = self.df['dns_transaction_id'].astype(pd.Int64Dtype())
+        # Uint16Dtype is pandas optional integer type for 16 bit unsigned ints
+        # this is because DNS transaction ID's are 16 bit unsigned integers 
+        # https://pandas.pydata.org/docs/reference/api/pandas.UInt16Dtype.html
+        self.df['dns_transaction_id'] = self.df['dns_transaction_id'].astype(pd.UInt16Dtype())
 
         self.df.sort_index(axis=1, inplace=True)
 
