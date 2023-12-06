@@ -1181,7 +1181,11 @@ class PCAP:
                     pkt_dict['dns_transaction_id'] = pkt[DNS].id
 
                     # depending on the DNS server, 
-                    # DNS responses both 
+                    # DNS responses may or may not a question field 
+                    # (and thus, a question type contained in `pkt[DNS].qd.qtype`)
+                    # so we check that the packet actually has a question field
+                    # then only when that happens to we atually try to access
+                    # and convert the questions numeric type to a strong
                     if pkt[DNS].qd is not None:
                         numeric_record_qtype = pkt[DNS].qd.qtype
                         # turn the qtype number into a string
@@ -1192,6 +1196,7 @@ class PCAP:
                 if (dnsqr := pkt.getlayer(DNSQR)) is not None:
                     pkt_dict.update(
                         is_dns=True,
+                    # are given a record, 
                         dns_query=(
                             dnsqr.qname.decode('utf-8')
                             if isinstance(dnsqr.qname, bytes)
@@ -1254,8 +1259,6 @@ class PCAP:
         self.df['dns_transaction_id'] = self.df['dns_transaction_id'].astype(pd.UInt16Dtype())
 
         self.df.sort_index(axis=1, inplace=True)
-
-        self.df.dns_traffic = self.df[self.df['dns_transaction_id'].notnull()]
 
     def pcap2pandas(self):
         """Parse PCAP file into pandas DataFrame.
