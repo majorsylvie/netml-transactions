@@ -113,12 +113,13 @@ Possible features to pass to `flows2features` include:
 
 ### Manipulating DNS Traffic
 NetML offers some functionality targetted specifically for DNS traffic.
+#### pcap.pcap2pandas()
 This is primarily seen in the information made available through `pcap.pcap2pandas()`.
 
 ```py
 pcap = PCAP("relative/or/absolute/path/to/some/data.pcap")
-
-packet_capture_dataframe = pcap.pcap2pandas()
+pcap.pcap2pandas()
+packet_capture_dataframe = pcap.df
 ```
 The above produced dataframe will have the following columns: *(All columns targetted towards DNS traffic have `dns` in their names)*
 - datetime
@@ -145,10 +146,40 @@ The above produced dataframe will have the following columns: *(All columns targ
 where `dns_query` and `dns_resp` contains the query and response information in plain text.
 `is_dns` is a boolean that is True for DNS traffic and False otherwise
 `dns_transaction_id` is the transaction id for a DNS packet, stored as an unsigned 16 bit integer (pandas dtype UInt16)
-`dns_record_qtype` is the string representation of a DNS packet's record type. The mapping between question type numbers and strings are provided by IANA: https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml and programmatically determined through the helper functions `
+`dns_record_qtype` is the string representation of a DNS packet's record type. The mapping between question type numbers and strings are provided by IANA: https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml and programmatically determined through the helper functions  `_dns_record_qtype_to_string()` and `_match_dns_record_to_range()` in `src/netml/pparser/parser.py`.
 
+All of the DNS related information can only ever by present for DNS packets. And are set to null values for any non-DNS traffic. `dns_resp` for example is null for any DNS requests, while `dns_transaction_id` should be present for *all* DNS traffic.
 
+*Note about null values for DNS record type*
+The question of including the record type (A, AAAA, CNAME, ...) in a DNS response is left up to the DNS resolver.
+Some DNS resolvers do include them, some don't.
+Thus sometimes you may work with data that has DNS record types on all DNS packet.
+Other times you may encounter data that only has DNS records on the requests.
 
+*Note of nuance about multiple records in one query:*
+it is technically allowed (via RFC 1035) for DNS packets to have more than one question/record in one query (refer to the `QDCOUNT` portion of the DNS structure in section 4.1.1 and 4.1.2 in RFC 1035: https://www.rfc-editor.org/rfc/rfc1035).
+However, in practice this is apparently not done, mainly because of the difficulty and ambiguity that comes from multiple questions and record types (like what does the `RCODE` mean with two questions?).
+**Thus, the implementation for adding the `dns_record_qtype` column assumes that there will be only one record per packet.**
+
+#### Easily Filter for DNS traffic
+Along with having the `is_dns` column in `pcap.pcap2pandas()`, we've also provided the `pcap.df.dns_traffic` property, which will return only the DNS traffic from a particular `PCAP`'s dataframe.
+
+Letting you do:
+
+```py
+pcap = PCAP("relative/or/absolute/path/to/some/data.pcap")
+pcap.pcap2pandas()
+only_dns_traffic_df =  pcap.df.dns_traffic
+```
+
+Though it still is possible to use `is_dns`, especially useful if you want to exclude DNS traffic or 
+filter for DNS traffic after doing other operation to the dataframe.
+
+```py
+pcap_df = pcap.df
+...
+only_dns_traffic_df = pcap_df[pcap_df["is_dns"]]
+```
 
 ### Classification of network traffic for outlier detection
 
