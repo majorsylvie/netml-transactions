@@ -111,6 +111,9 @@ Possible features to pass to `flows2features` include:
   flow is represented as a timeseries of byte counts in small time intervals,
   with one sample per time interval.
 
+### Working with DNS Traffic
+
+
 ### Classification of network traffic for outlier detection
 
 Having [trained a model](#training-a-network-traffic-model) to your network traffic,
