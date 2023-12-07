@@ -179,7 +179,7 @@ def _dns_record_qtype_to_string(numeric_record_qtype):
     record_type = DNS_QTYPE_TO_RECORD_STRING.get(numeric_record_qtype,None)
 
     
-    # if it did not hit the above disctionary, that means the DNS record falls into 
+    # if it did not hit the above dictionary, that means the DNS record falls into 
     # some range as defined by IANA
     if record_type is None:
         # actually get the string representation of the range
