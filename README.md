@@ -111,7 +111,43 @@ Possible features to pass to `flows2features` include:
   flow is represented as a timeseries of byte counts in small time intervals,
   with one sample per time interval.
 
-### Working with DNS Traffic
+### Manipulating DNS Traffic
+NetML offers some functionality targetted specifically for DNS traffic.
+This is primarily seen in the information made available through `pcap.pcap2pandas()`.
+
+```py
+pcap = PCAP("relative/or/absolute/path/to/some/data.pcap")
+
+packet_capture_dataframe = pcap.pcap2pandas()
+```
+The above produced dataframe will have the following columns: *(All columns targetted towards DNS traffic have `dns` in their names)*
+- datetime
+- *dns_query*
+- *dns_record_qtype*
+- *dns_resp*
+- *dns_transaction_id*
+- ip_dst
+- ip_dst_int
+- ip_src
+- ip_src_int
+- *is_dns*
+- length
+- mac_dst
+- mac_dst_int
+- mac_src
+- mac_src_int
+- port_dst
+- port_src
+- protocol
+- time
+- time_normed
+
+where `dns_query` and `dns_resp` contains the query and response information in plain text.
+`is_dns` is a boolean that is True for DNS traffic and False otherwise
+`dns_transaction_id` is the transaction id for a DNS packet, stored as an unsigned 16 bit integer (pandas dtype UInt16)
+`dns_record_qtype` is the string representation of a DNS packet's record type. The mapping between question type numbers and strings are provided by IANA: https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml and programmatically determined through the helper functions `
+
+
 
 
 ### Classification of network traffic for outlier detection
