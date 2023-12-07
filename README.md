@@ -151,12 +151,14 @@ where `dns_query` and `dns_resp` contains the query and response information in 
 All of the DNS related information can only ever by present for DNS packets. And are set to null values for any non-DNS traffic. `dns_resp` for example is null for any DNS requests, while `dns_transaction_id` should be present for *all* DNS traffic.
 
 *Note about null values for DNS record type*
+
 The question of including the record type (A, AAAA, CNAME, ...) in a DNS response is left up to the DNS resolver.
 Some DNS resolvers do include them, some don't.
 Thus sometimes you may work with data that has DNS record types on all DNS packet.
 Other times you may encounter data that only has DNS records on the requests.
 
 *Note of nuance about multiple records in one query:*
+
 it is technically allowed (via RFC 1035) for DNS packets to have more than one question/record in one query (refer to the `QDCOUNT` portion of the DNS structure in section 4.1.1 and 4.1.2 in RFC 1035: https://www.rfc-editor.org/rfc/rfc1035).
 However, in practice this is apparently not done, mainly because of the difficulty and ambiguity that comes from multiple questions and record types (like what does the `RCODE` mean with two questions?).
 **Thus, the implementation for adding the `dns_record_qtype` column assumes that there will be only one record per packet.**
