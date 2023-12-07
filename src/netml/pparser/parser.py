@@ -78,6 +78,11 @@ def _dns_record_qtype_to_string(numeric_record_qtype):
         https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml
 
     """
+    # make sure that we are actually being given an integer
+    if not isinstance(numeric_record_qtype, int):
+        print(f"DNS packet with non-numeric qtype: {numeric_record_qtype} given")
+        return pd.NA
+
     DNS_QTYPE_TO_RECORD_STRING = { 1 : "A",
                                  2 : "NS",
                                  3 : "MD",
@@ -174,7 +179,7 @@ def _dns_record_qtype_to_string(numeric_record_qtype):
     record_type = DNS_QTYPE_TO_RECORD_STRING.get(numeric_record_qtype,None)
 
     
-    # if it did not hit the above disctionary, that means the DNS record falls into 
+    # if it did not hit the above dictionary, that means the DNS record falls into 
     # some range as defined by IANA
     if record_type is None:
         # actually get the string representation of the range
@@ -1174,15 +1179,24 @@ class PCAP:
                     # the transaction ID is stored in the `.id`
                     # attribute of packet's DNS layer
                     pkt_dict['dns_transaction_id'] = pkt[DNS].id
-                    numeric_record_qtype = pkt[DNS].qd.qtype
-                    # turn the qtype number into a string
-                    # via helper function
-                    pkt_dict['dns_record_qtype'] = _dns_record_qtype_to_string(numeric_record_qtype)
+
+                    # depending on the DNS server, 
+                    # DNS responses may or may not a question field 
+                    # (and thus, a question type contained in `pkt[DNS].qd.qtype`)
+                    # so we check that the packet actually has a question field
+                    # then only when that happens to we atually try to access
+                    # and convert the questions numeric type to a strong
+                    if pkt[DNS].qd is not None:
+                        numeric_record_qtype = pkt[DNS].qd.qtype
+                        # turn the qtype number into a string
+                        # via helper function
+                        pkt_dict['dns_record_qtype'] = _dns_record_qtype_to_string(numeric_record_qtype)
 
 
                 if (dnsqr := pkt.getlayer(DNSQR)) is not None:
                     pkt_dict.update(
                         is_dns=True,
+                    # are given a record, 
                         dns_query=(
                             dnsqr.qname.decode('utf-8')
                             if isinstance(dnsqr.qname, bytes)
@@ -1245,8 +1259,6 @@ class PCAP:
         self.df['dns_transaction_id'] = self.df['dns_transaction_id'].astype(pd.UInt16Dtype())
 
         self.df.sort_index(axis=1, inplace=True)
-
-        self.df.dns_traffic = self.df[self.df['dns_transaction_id'].notnull()]
 
     def pcap2pandas(self):
         """Parse PCAP file into pandas DataFrame.
