@@ -123,15 +123,15 @@ packet_capture_dataframe = pcap.df
 ```
 The above produced dataframe will have the following columns: *(All columns targetted towards DNS traffic have `dns` in their names)*
 - datetime
-- *dns_query*
-- *dns_record_qtype*
-- *dns_resp*
-- *dns_transaction_id*
+- **dns_query**
+- **dns_record_qtype**
+- **dns_resp**
+- **dns_transaction_id**
 - ip_dst
 - ip_dst_int
 - ip_src
 - ip_src_int
-- *is_dns*
+- **is_dns**
 - length
 - mac_dst
 - mac_dst_int
