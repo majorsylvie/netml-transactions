@@ -1260,6 +1260,8 @@ class PCAP:
 
         self.df.sort_index(axis=1, inplace=True)
 
+        self.df.dns_traffic = self.df[self.df['is_dns'] == True]
+
     def pcap2pandas(self):
         """Parse PCAP file into pandas DataFrame.
 
